@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth';
-import { CheckCircle2, Loader2, LogOut, Package, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Loader2, LogOut, AlertCircle } from 'lucide-react';
 import { auth, googleProvider } from './firebase';
 import {
   createMovimientoWithMateriales,
@@ -14,6 +14,7 @@ import type { MaterialRecord, MovimientoRecord } from './types/warehouse';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { MovimientoForm } from './components/MovimientoForm';
 import { MovimientosList } from './components/MovimientosList';
+import { WarehouseLogo } from './components/WarehouseLogo';
 
 type ActiveView = 'historial' | 'formulario';
 
@@ -214,11 +215,11 @@ function WarehouseWorkspace() {
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-        <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
-            <Package className="h-6 w-6" aria-hidden="true" />
+        <div className="w-full max-w-md rounded-xl border border-blue-200/80 bg-white p-8 shadow-xs">
+          <div className="flex h-14 w-24 items-center justify-center rounded-lg border border-blue-100 bg-blue-50/60 px-2.5 py-2">
+            <WarehouseLogo className="h-full w-full" compact />
           </div>
-          <h1 className="mt-5 text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="mt-5 text-xl font-bold tracking-tight text-blue-950">
             Control de Almacén
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
@@ -239,7 +240,7 @@ function WarehouseWorkspace() {
             type="button"
             onClick={handleSignIn}
             disabled={isSigningIn}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 focus:outline-none disabled:opacity-60 whitespace-nowrap"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-lg bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-800 focus:ring-2 focus:ring-blue-700 focus:ring-offset-2 focus:outline-none disabled:opacity-60 whitespace-nowrap"
           >
             {isSigningIn && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
             Iniciar sesión con Google
@@ -252,7 +253,7 @@ function WarehouseWorkspace() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Top Bar Contract: 3 zones */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+      <header className="sticky top-0 z-30 border-b border-blue-200/80 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-8 px-4 py-3.5 sm:px-6 lg:px-8">
           <a
             href="#historial"
@@ -260,9 +261,10 @@ function WarehouseWorkspace() {
               e.preventDefault();
               setActiveView('historial');
             }}
-            className="text-base font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-2.5 text-base font-bold tracking-tight text-blue-950 whitespace-nowrap shrink-0"
           >
-            Control de Almacén
+            <WarehouseLogo className="h-7 w-14 shrink-0" compact />
+            <span>Control de Almacén</span>
           </a>
 
           <nav aria-label="Navegación principal" className="flex items-center gap-6 text-sm font-medium">
@@ -271,8 +273,8 @@ function WarehouseWorkspace() {
               onClick={() => setActiveView('historial')}
               className={`border-b-2 py-1 transition-colors whitespace-nowrap shrink-0 ${
                 activeView === 'historial'
-                  ? 'border-slate-900 text-slate-900'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
+                  ? 'border-blue-700 text-blue-950'
+                  : 'border-transparent text-slate-500 hover:text-blue-900'
               }`}
             >
               Historial de Movimientos
@@ -282,8 +284,8 @@ function WarehouseWorkspace() {
               onClick={handleStartNew}
               className={`border-b-2 py-1 transition-colors whitespace-nowrap shrink-0 ${
                 activeView === 'formulario'
-                  ? 'border-slate-900 text-slate-900'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
+                  ? 'border-blue-700 text-blue-950'
+                  : 'border-transparent text-slate-500 hover:text-blue-900'
               }`}
             >
               {editingMovimiento ? 'Editando Remisión' : 'Nueva Remisión'}
@@ -297,7 +299,7 @@ function WarehouseWorkspace() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-900 transition-colors hover:bg-blue-50 whitespace-nowrap shrink-0"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
               Salir

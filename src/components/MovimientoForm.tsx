@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Package, Plus, Trash2, AlertCircle, Loader2, X } from 'lucide-react';
+import { Plus, Trash2, AlertCircle, Loader2, X } from 'lucide-react';
 import {
   BLUEPRINT_LIMITS,
   getTodayIsoDate,
@@ -13,6 +13,7 @@ import {
   type UnidadMedida,
 } from '../types/warehouse';
 import type { SaveMovimientoData } from '../services/movimientosService';
+import { WarehouseLogo } from './WarehouseLogo';
 
 interface MovimientoFormProps {
   defaultAlmacenista: string;
@@ -171,8 +172,8 @@ export function MovimientoForm({
 
   if (isLoadingEdit) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-10 text-center">
-        <Loader2 className="mx-auto h-6 w-6 animate-spin text-slate-600" aria-hidden="true" />
+      <div className="rounded-xl border border-blue-200/80 bg-white p-10 text-center">
+        <Loader2 className="mx-auto h-6 w-6 animate-spin text-blue-700" aria-hidden="true" />
         <p className="mt-3 text-sm text-slate-600">Cargando partidas del movimiento...</p>
       </div>
     );
@@ -182,12 +183,12 @@ export function MovimientoForm({
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8 lg:p-10"
+      className="overflow-hidden rounded-xl border border-blue-200/80 bg-white shadow-xs"
       aria-label="Formulario de Nota de Entrada o Remisión de Almacén"
     >
       {/* Barra de modo edición */}
       {isEditMode && editingMovimiento && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-200 bg-amber-50/90 px-6 py-3 text-sm text-amber-950 sm:px-8">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold">Editando movimiento</span>
             <span aria-hidden="true">·</span>
@@ -204,191 +205,198 @@ export function MovimientoForm({
         </div>
       )}
 
-      {/* Encabezado: Logo y Título */}
-      <header className="flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <div
-            className="flex h-16 w-28 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-600"
-            aria-label="Espacio para logotipo de empresa"
-          >
-            <div className="flex items-center gap-1.5 text-sm font-semibold tracking-tight">
-              <Package className="h-4 w-4 text-slate-500" aria-hidden="true" />
-              <span>Logo</span>
+      {/* Encabezado Formal: Logo de Camioneta y Título */}
+      <header className="border-b border-blue-100 bg-gradient-to-r from-blue-950/[0.03] via-white to-sky-50/50 px-6 py-6 sm:px-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-5">
+            <div
+              className="flex h-16 w-28 shrink-0 items-center justify-center rounded-lg border border-blue-200/80 bg-white px-2.5 py-2"
+              aria-label="Logotipo de logística y almacén"
+            >
+              <WarehouseLogo className="h-full w-full" />
             </div>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-              Nota de entrada / Remisión de Almacén
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              {isEditMode
-                ? 'Modifica los datos generales o las partidas de materiales y guarda los cambios'
-                : 'Registra entradas, salidas y devoluciones para el historial del almacén'}
-            </p>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-blue-950 sm:text-2xl">
+                Nota de entrada / Remisión de Almacén
+              </h1>
+              <p className="mt-1 text-sm text-slate-600">
+                {isEditMode
+                  ? 'Modifica los datos generales o las partidas de materiales y guarda los cambios'
+                  : 'Registra entradas, salidas y devoluciones para el historial del almacén'}
+              </p>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Error de validación */}
       {formError && (
-        <div
-          role="alert"
-          className="mt-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
-        >
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
-          <p>{formError}</p>
+        <div className="px-6 pt-6 sm:px-8">
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
+            <p>{formError}</p>
+          </div>
         </div>
       )}
 
-      {/* Datos Generales */}
+      {/* Área 1: Datos Generales */}
       <section
         aria-label="Datos generales del documento"
-        className="mt-6 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2"
+        className="border-b border-blue-100 bg-white px-6 py-6 sm:px-8"
       >
-        <div>
-          <label htmlFor="folio" className="block text-sm font-semibold text-slate-700">
-            Folio
-          </label>
-          <input
-            type="text"
-            id="folio"
-            name="folio"
-            value={folio}
-            maxLength={BLUEPRINT_LIMITS.FOLIO_MAX}
-            onChange={(e) => setFolio(e.target.value)}
-            placeholder="Ej. REM-2026-0042"
-            required
-            className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
-          />
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold tracking-tight text-blue-900">
+            01. Datos Generales
+          </h2>
         </div>
 
-        <div>
-          <label htmlFor="fecha" className="block text-sm font-semibold text-slate-700">
-            Fecha
-          </label>
-          <input
-            type="date"
-            id="fecha"
-            name="fecha"
-            value={fecha}
-            onChange={(e) => setFecha(e.target.value)}
-            required
-            className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm tabular-nums text-slate-900 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
-          />
-        </div>
+        <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+          <div>
+            <label htmlFor="folio" className="block text-sm font-semibold text-slate-700">
+              Folio
+            </label>
+            <input
+              type="text"
+              id="folio"
+              name="folio"
+              value={folio}
+              maxLength={BLUEPRINT_LIMITS.FOLIO_MAX}
+              onChange={(e) => setFolio(e.target.value)}
+              placeholder="Ej. REM-2026-0042"
+              required
+              className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="proveedor" className="block text-sm font-semibold text-slate-700">
-            Proveedor
-          </label>
-          <input
-            type="text"
-            id="proveedor"
-            name="proveedor"
-            value={proveedor}
-            maxLength={BLUEPRINT_LIMITS.PROVEEDOR_MAX}
-            onChange={(e) => setProveedor(e.target.value)}
-            placeholder="Nombre o razón social del proveedor"
-            required
-            className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
-          />
-        </div>
+          <div>
+            <label htmlFor="fecha" className="block text-sm font-semibold text-slate-700">
+              Fecha
+            </label>
+            <input
+              type="date"
+              id="fecha"
+              name="fecha"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+              required
+              className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm tabular-nums text-slate-900 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="rfc" className="block text-sm font-semibold text-slate-700">
-            RFC
-          </label>
-          <input
-            type="text"
-            id="rfc"
-            name="rfc"
-            value={rfc}
-            maxLength={BLUEPRINT_LIMITS.RFC_MAX}
-            onChange={(e) =>
-              setRfc(e.target.value.toUpperCase().replace(/[^A-Z0-9&Ñ]/g, ''))
-            }
-            placeholder="Ej. ABC120315XY9"
-            required
-            className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm uppercase text-slate-900 placeholder:normal-case placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
-          />
+          <div>
+            <label htmlFor="proveedor" className="block text-sm font-semibold text-slate-700">
+              Proveedor
+            </label>
+            <input
+              type="text"
+              id="proveedor"
+              name="proveedor"
+              value={proveedor}
+              maxLength={BLUEPRINT_LIMITS.PROVEEDOR_MAX}
+              onChange={(e) => setProveedor(e.target.value)}
+              placeholder="Nombre o razón social del proveedor"
+              required
+              className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="rfc" className="block text-sm font-semibold text-slate-700">
+              RFC
+            </label>
+            <input
+              type="text"
+              id="rfc"
+              name="rfc"
+              value={rfc}
+              maxLength={BLUEPRINT_LIMITS.RFC_MAX}
+              onChange={(e) =>
+                setRfc(e.target.value.toUpperCase().replace(/[^A-Z0-9&Ñ]/g, ''))
+              }
+              placeholder="Ej. ABC120315XY9"
+              required
+              className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm uppercase text-slate-900 placeholder:normal-case placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
+            />
+          </div>
         </div>
       </section>
 
-      {/* Tipo de Movimiento */}
-      <fieldset className="mt-6 border-y border-dashed border-slate-300 py-5">
+      {/* Área 2: Tipo de Movimiento (zona diferenciada en azul suave) */}
+      <fieldset className="border-b border-blue-100 bg-blue-50/55 px-6 py-5 sm:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
-          <legend className="text-sm font-semibold text-slate-700">
-            Tipo de Movimiento:
+          <legend className="text-sm font-semibold text-blue-950">
+            02. Tipo de Movimiento:
           </legend>
-          <div className="flex flex-wrap items-center gap-6">
-            {TIPOS_MOVIMIENTO.map((opcion) => (
-              <label
-                key={opcion.value}
-                htmlFor={`tipo_movimiento_${opcion.value}`}
-                className="inline-flex cursor-pointer items-center gap-2.5 text-sm font-medium text-slate-800"
-              >
-                <input
-                  type="radio"
-                  id={`tipo_movimiento_${opcion.value}`}
-                  name="tipo_movimiento"
-                  value={opcion.value}
-                  checked={tipoMovimiento === opcion.value}
-                  onChange={() => setTipoMovimiento(opcion.value)}
-                  className="h-4 w-4 border-slate-300 text-slate-900 accent-slate-900 focus:ring-2 focus:ring-slate-900/20"
-                />
-                <span>{opcion.label}</span>
-              </label>
-            ))}
+          <div className="flex flex-wrap items-center gap-3">
+            {TIPOS_MOVIMIENTO.map((opcion) => {
+              const selected = tipoMovimiento === opcion.value;
+              return (
+                <label
+                  key={opcion.value}
+                  htmlFor={`tipo_movimiento_${opcion.value}`}
+                  className={`inline-flex cursor-pointer items-center gap-2.5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                    selected
+                      ? 'border-blue-700 bg-blue-900 text-white shadow-xs'
+                      : 'border-blue-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50/60'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    id={`tipo_movimiento_${opcion.value}`}
+                    name="tipo_movimiento"
+                    value={opcion.value}
+                    checked={selected}
+                    onChange={() => setTipoMovimiento(opcion.value)}
+                    className="sr-only"
+                  />
+                  <span>{opcion.label}</span>
+                </label>
+              );
+            })}
           </div>
         </div>
       </fieldset>
 
-      {/* Detalle de Materiales */}
-      <section aria-labelledby="detalle-materiales-heading" className="mt-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3">
+      {/* Área 3: Detalle de Materiales (tabla con encabezado azul marino y filas alternadas) */}
+      <section
+        aria-labelledby="detalle-materiales-heading"
+        className="border-b border-blue-100 bg-white px-6 py-6 sm:px-8"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
           <h2
             id="detalle-materiales-heading"
-            className="text-base font-semibold text-slate-900"
+            className="text-sm font-semibold tracking-tight text-blue-900"
           >
-            Detalle de Materiales
+            03. Detalle de Materiales
           </h2>
           <button
             type="button"
             onClick={handleAddRow}
             disabled={materiales.length >= BLUEPRINT_LIMITS.MAX_PARTIDAS}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:ring-2 focus:ring-slate-900/15 focus:outline-none disabled:opacity-50 whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 px-3 py-1.5 text-xs font-semibold text-blue-900 transition-colors hover:bg-blue-100 focus:ring-2 focus:ring-blue-600/20 focus:outline-none disabled:opacity-50 whitespace-nowrap shrink-0"
           >
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             Agregar fila
           </button>
         </div>
 
-        <div className="overflow-x-auto rounded-lg border border-slate-200">
-          <table className="min-w-full divide-y divide-slate-200 text-left">
-            <thead className="bg-slate-50">
+        <div className="overflow-x-auto rounded-lg border border-blue-200/80">
+          <table className="min-w-full divide-y divide-blue-100 text-left">
+            <thead className="bg-blue-950 text-white">
               <tr>
-                <th
-                  scope="col"
-                  className="w-36 px-3.5 py-3 text-xs font-semibold text-slate-700"
-                >
+                <th scope="col" className="w-36 px-3.5 py-3 text-xs font-semibold">
                   Código
                 </th>
-                <th
-                  scope="col"
-                  className="px-3.5 py-3 text-xs font-semibold text-slate-700"
-                >
+                <th scope="col" className="px-3.5 py-3 text-xs font-semibold">
                   Descripción Material
                 </th>
-                <th
-                  scope="col"
-                  className="w-32 px-3.5 py-3 text-xs font-semibold text-slate-700"
-                >
+                <th scope="col" className="w-32 px-3.5 py-3 text-xs font-semibold">
                   Cantidad
                 </th>
-                <th
-                  scope="col"
-                  className="w-40 px-3.5 py-3 text-xs font-semibold text-slate-700"
-                >
+                <th scope="col" className="w-40 px-3.5 py-3 text-xs font-semibold">
                   Unidad
                 </th>
                 {materiales.length > 1 && (
@@ -398,9 +406,12 @@ export function MovimientoForm({
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 bg-white">
+            <tbody className="divide-y divide-blue-100 bg-white">
               {materiales.map((row, index) => (
-                <tr key={row.localId} className="hover:bg-slate-50/60">
+                <tr
+                  key={row.localId}
+                  className="odd:bg-white even:bg-blue-50/30 hover:bg-blue-50/70"
+                >
                   <td className="px-3 py-2.5 align-middle">
                     <label htmlFor={`codigo_${index + 1}`} className="sr-only">
                       Código fila {index + 1}
@@ -415,7 +426,7 @@ export function MovimientoForm({
                         handleMaterialChange(row.localId, 'codigo', e.target.value)
                       }
                       placeholder="SKU-001"
-                      className="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
+                      className="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
                     />
                   </td>
                   <td className="px-3 py-2.5 align-middle">
@@ -439,7 +450,7 @@ export function MovimientoForm({
                         )
                       }
                       placeholder="Descripción del producto o material"
-                      className="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
+                      className="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
                     />
                   </td>
                   <td className="px-3 py-2.5 align-middle">
@@ -458,7 +469,7 @@ export function MovimientoForm({
                         handleMaterialChange(row.localId, 'cantidad', e.target.value)
                       }
                       placeholder="0"
-                      className="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-right font-mono text-sm tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
+                      className="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-right font-mono text-sm tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
                     />
                   </td>
                   <td className="px-3 py-2.5 align-middle">
@@ -472,7 +483,7 @@ export function MovimientoForm({
                       onChange={(e) =>
                         handleMaterialChange(row.localId, 'unidad', e.target.value)
                       }
-                      className="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
+                      className="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
                     >
                       {UNIDADES_OPCIONES.map((u) => (
                         <option key={u.value} value={u.value}>
@@ -487,7 +498,7 @@ export function MovimientoForm({
                         type="button"
                         onClick={() => handleRemoveRow(row.localId)}
                         aria-label={`Eliminar fila ${index + 1}`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-600 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
                       >
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </button>
@@ -500,76 +511,78 @@ export function MovimientoForm({
         </div>
       </section>
 
-      <hr className="my-6 border-0 border-t border-dashed border-slate-300" />
-
-      {/* Observaciones / Estado del Paquete */}
-      <section aria-label="Observaciones y estado del paquete">
-        <div className="flex items-center justify-between gap-2">
-          <label
-            htmlFor="observaciones"
-            className="block text-sm font-semibold text-slate-700"
-          >
-            Observaciones / Estado del Paquete:
-          </label>
-          <span className="font-mono text-xs tabular-nums text-slate-400">
-            {observaciones.length}/{BLUEPRINT_LIMITS.OBSERVACIONES_MAX}
-          </span>
-        </div>
-        <textarea
-          id="observaciones"
-          name="observaciones"
-          rows={3}
-          maxLength={BLUEPRINT_LIMITS.OBSERVACIONES_MAX}
-          value={observaciones}
-          onChange={(e) => setObservaciones(e.target.value)}
-          placeholder="Indique condiciones físicas del empaque, sellos, faltantes o incidencias detectadas..."
-          className="mt-1.5 block w-full resize-y rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
-        />
-      </section>
-
-      {/* Pie de formulario: Recibió y Guardar / Actualizar */}
-      <footer className="mt-6 flex flex-col gap-4 border-t border-slate-200 pt-6 sm:flex-row sm:items-end sm:justify-between">
-        <div className="w-full sm:max-w-md">
-          <label
-            htmlFor="recibio_almacenista"
-            className="block text-sm font-semibold text-slate-700"
-          >
-            Recibió (Almacenista):
-          </label>
-          <input
-            type="text"
-            id="recibio_almacenista"
-            name="recibio_almacenista"
-            value={recibioAlmacenista}
-            maxLength={BLUEPRINT_LIMITS.ALMACENISTA_MAX}
-            onChange={(e) => setRecibioAlmacenista(e.target.value)}
-            placeholder="Nombre completo del almacenista"
-            required
-            className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/15 focus:outline-none"
+      {/* Área 4: Observaciones y Firma / Guardar (zona diferenciada inferior) */}
+      <section
+        aria-label="Observaciones y cierre de recepción"
+        className="bg-slate-50/80 px-6 py-6 sm:px-8"
+      >
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <label
+              htmlFor="observaciones"
+              className="block text-sm font-semibold text-blue-950"
+            >
+              04. Observaciones / Estado del Paquete:
+            </label>
+            <span className="font-mono text-xs tabular-nums text-slate-400">
+              {observaciones.length}/{BLUEPRINT_LIMITS.OBSERVACIONES_MAX}
+            </span>
+          </div>
+          <textarea
+            id="observaciones"
+            name="observaciones"
+            rows={3}
+            maxLength={BLUEPRINT_LIMITS.OBSERVACIONES_MAX}
+            value={observaciones}
+            onChange={(e) => setObservaciones(e.target.value)}
+            placeholder="Indique condiciones físicas del empaque, sellos, faltantes o incidencias detectadas..."
+            className="mt-2 block w-full resize-y rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3">
-          {isEditMode && (
-            <button
-              type="button"
-              onClick={onCancelEdit}
-              disabled={isSaving}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:ring-2 focus:ring-slate-900/15 focus:outline-none disabled:opacity-50 whitespace-nowrap shrink-0"
+        <footer className="mt-6 flex flex-col gap-4 border-t border-blue-200/70 pt-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="w-full sm:max-w-md">
+            <label
+              htmlFor="recibio_almacenista"
+              className="block text-sm font-semibold text-blue-950"
             >
-              Cancelar
+              Recibió (Almacenista):
+            </label>
+            <input
+              type="text"
+              id="recibio_almacenista"
+              name="recibio_almacenista"
+              value={recibioAlmacenista}
+              maxLength={BLUEPRINT_LIMITS.ALMACENISTA_MAX}
+              onChange={(e) => setRecibioAlmacenista(e.target.value)}
+              placeholder="Nombre completo del almacenista"
+              required
+              className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3">
+            {isEditMode && (
+              <button
+                type="button"
+                onClick={onCancelEdit}
+                disabled={isSaving}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:ring-2 focus:ring-blue-600/20 focus:outline-none disabled:opacity-50 whitespace-nowrap shrink-0"
+              >
+                Cancelar
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-900 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-800 focus:ring-2 focus:ring-blue-700 focus:ring-offset-2 focus:outline-none disabled:opacity-60 sm:w-auto whitespace-nowrap shrink-0"
+            >
+              {isSaving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+              {isEditMode ? 'Actualizar Datos' : 'Guardar Datos'}
             </button>
-          )}
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 focus:outline-none disabled:opacity-60 sm:w-auto whitespace-nowrap shrink-0"
-          >
-            {isSaving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-            {isEditMode ? 'Actualizar Datos' : 'Guardar Datos'}
-          </button>
-        </div>
-      </footer>
+          </div>
+        </footer>
+      </section>
     </form>
   );
 }
