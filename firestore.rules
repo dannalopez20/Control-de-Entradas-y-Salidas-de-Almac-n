@@ -1,0 +1,238 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny all reads and writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Primitive Helpers ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // --- Entity Validation Blueprints ---
+    function isValidMovimiento(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'folio',
+          'fecha',
+          'proveedor',
+          'rfc',
+          'tipo_movimiento',
+          'observaciones',
+          'recibio_almacenista',
+          'total_partidas',
+          'total_cantidad',
+          'resumen_materiales',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'folio',
+          'fecha',
+          'proveedor',
+          'rfc',
+          'tipo_movimiento',
+          'observaciones',
+          'recibio_almacenista',
+          'total_partidas',
+          'total_cantidad',
+          'resumen_materiales',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.ownerId is string
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.folio is string
+        && data.folio.size() >= 1
+        && data.folio.size() <= 60
+        && data.fecha is string
+        && data.fecha.size() == 10
+        && data.fecha.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && data.proveedor is string
+        && data.proveedor.size() >= 1
+        && data.proveedor.size() <= 150
+        && data.rfc is string
+        && data.rfc.size() >= 1
+        && data.rfc.size() <= 13
+        && data.rfc.matches('^[A-Z0-9&Ñ]+$')
+        && data.tipo_movimiento is string
+        && data.tipo_movimiento in ['entrada', 'salida', 'devolucion']
+        && data.observaciones is string
+        && data.observaciones.size() <= 1000
+        && data.recibio_almacenista is string
+        && data.recibio_almacenista.size() >= 1
+        && data.recibio_almacenista.size() <= 120
+        && data.total_partidas is int
+        && data.total_partidas >= 1
+        && data.total_partidas <= 100
+        && (data.total_cantidad is int || data.total_cantidad is float)
+        && data.total_cantidad >= 0
+        && data.total_cantidad <= 100000000
+        && data.resumen_materiales is string
+        && data.resumen_materiales.size() <= 300
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidMaterial(data, movimientoId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'movimientoId',
+          'codigo',
+          'descripcion_material',
+          'cantidad',
+          'unidad',
+          'orden',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'movimientoId',
+          'codigo',
+          'descripcion_material',
+          'cantidad',
+          'unidad',
+          'orden',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.ownerId is string
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.movimientoId is string
+        && isValidId(data.movimientoId)
+        && data.movimientoId == movimientoId
+        && data.codigo is string
+        && data.codigo.size() <= 60
+        && data.descripcion_material is string
+        && data.descripcion_material.size() >= 1
+        && data.descripcion_material.size() <= 200
+        && (data.cantidad is int || data.cantidad is float)
+        && data.cantidad >= 0
+        && data.cantidad <= 10000000
+        && data.unidad is string
+        && data.unidad in ['caja', 'pieza', 'paquete', 'kg', 'litro', 'tarima']
+        && data.orden is int
+        && data.orden >= 0
+        && data.orden <= 100
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Collection: movimientos ---
+    match /movimientos/{movimientoId} {
+      allow get: if isSignedIn()
+        && isValidId(movimientoId)
+        && existing().ownerId == request.auth.uid;
+
+      allow list: if isSignedIn()
+        && existing().ownerId == request.auth.uid;
+
+      allow create: if isVerified()
+        && isValidId(movimientoId)
+        && isValidMovimiento(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerified()
+        && isValidId(movimientoId)
+        && isValidMovimiento(incoming())
+        && (
+          // Action: EditMovimiento
+          existing().ownerId == request.auth.uid
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'folio',
+            'fecha',
+            'proveedor',
+            'rfc',
+            'tipo_movimiento',
+            'observaciones',
+            'recibio_almacenista',
+            'total_partidas',
+            'total_cantidad',
+            'resumen_materiales',
+            'updatedAt'
+          ])
+        );
+
+      allow delete: if isVerified()
+        && isValidId(movimientoId)
+        && existing().ownerId == request.auth.uid;
+
+      // --- Subcollection: materiales (Master Gate) ---
+      match /materiales/{materialId} {
+        allow get: if isSignedIn()
+          && isValidId(movimientoId)
+          && isValidId(materialId)
+          && existing().ownerId == request.auth.uid
+          && get(/databases/$(database)/documents/movimientos/$(movimientoId)).data.ownerId == request.auth.uid;
+
+        allow list: if isSignedIn()
+          && existing().ownerId == request.auth.uid;
+
+        allow create: if isVerified()
+          && isValidId(movimientoId)
+          && isValidId(materialId)
+          && isValidMaterial(incoming(), movimientoId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/movimientos/$(movimientoId))
+          && getAfter(/databases/$(database)/documents/movimientos/$(movimientoId)).data.ownerId == request.auth.uid;
+
+        allow update: if isVerified()
+          && isValidId(movimientoId)
+          && isValidId(materialId)
+          && isValidMaterial(incoming(), movimientoId)
+          && (
+            // Action: EditMaterial
+            existing().ownerId == request.auth.uid
+            && incoming().ownerId == existing().ownerId
+            && incoming().movimientoId == existing().movimientoId
+            && incoming().createdAt == existing().createdAt
+            && incoming().updatedAt == request.time
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'codigo',
+              'descripcion_material',
+              'cantidad',
+              'unidad',
+              'orden',
+              'updatedAt'
+            ])
+            && get(/databases/$(database)/documents/movimientos/$(movimientoId)).data.ownerId == request.auth.uid
+          );
+
+        allow delete: if isVerified()
+          && isValidId(movimientoId)
+          && isValidId(materialId)
+          && existing().ownerId == request.auth.uid
+          && get(/databases/$(database)/documents/movimientos/$(movimientoId)).data.ownerId == request.auth.uid;
+      }
+    }
+  }
+}

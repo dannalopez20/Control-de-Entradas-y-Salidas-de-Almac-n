@@ -1,0 +1,6 @@
+{
+  "name": "Nota de Entrada / Remisión de Almacén",
+  "description": "Formulario WMS de control de almacén para registro de notas de entrada, salida y devolución de materiales.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

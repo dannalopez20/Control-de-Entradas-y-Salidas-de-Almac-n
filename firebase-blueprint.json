@@ -1,0 +1,175 @@
+{
+  "entities": {
+    "MovimientoAlmacen": {
+      "title": "Movimiento de Almacén",
+      "description": "Nota de entrada, salida o devolución de almacén registrada por un almacenista.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID del usuario autenticado propietario del registro.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "folio": {
+          "type": "string",
+          "description": "Número o código de folio de la nota o remisión.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date",
+          "description": "Fecha del movimiento en formato YYYY-MM-DD.",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "proveedor": {
+          "type": "string",
+          "description": "Nombre o razón social del proveedor.",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "rfc": {
+          "type": "string",
+          "description": "Registro Federal de Contribuyentes del proveedor.",
+          "minLength": 1,
+          "maxLength": 13,
+          "pattern": "^[A-Z0-9&Ñ]+$"
+        },
+        "tipo_movimiento": {
+          "type": "string",
+          "description": "Tipo de movimiento de almacén.",
+          "enum": ["entrada", "salida", "devolucion"]
+        },
+        "observaciones": {
+          "type": "string",
+          "description": "Observaciones y estado físico del paquete.",
+          "maxLength": 1000
+        },
+        "recibio_almacenista": {
+          "type": "string",
+          "description": "Nombre del almacenista que recibió o registró el movimiento.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "total_partidas": {
+          "type": "number",
+          "description": "Número total de partidas de materiales asociadas al movimiento."
+        },
+        "total_cantidad": {
+          "type": "number",
+          "description": "Suma total de cantidades registradas en las partidas."
+        },
+        "resumen_materiales": {
+          "type": "string",
+          "description": "Resumen textual breve de los materiales para visualización y búsqueda rápida.",
+          "maxLength": 300
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Marca de tiempo de creación asignada por el servidor."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Marca de tiempo de última actualización asignada por el servidor."
+        }
+      },
+      "required": [
+        "ownerId",
+        "folio",
+        "fecha",
+        "proveedor",
+        "rfc",
+        "tipo_movimiento",
+        "observaciones",
+        "recibio_almacenista",
+        "total_partidas",
+        "total_cantidad",
+        "resumen_materiales",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MaterialMovimiento": {
+      "title": "Material del Movimiento",
+      "description": "Partida individual de material perteneciente a una nota o remisión de almacén.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID del propietario del movimiento padre.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "movimientoId": {
+          "type": "string",
+          "description": "ID del documento padre en la colección movimientos.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "codigo": {
+          "type": "string",
+          "description": "Código o SKU del material.",
+          "maxLength": 60
+        },
+        "descripcion_material": {
+          "type": "string",
+          "description": "Descripción del producto o material.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "cantidad": {
+          "type": "number",
+          "description": "Cantidad recibida, enviada o devuelta."
+        },
+        "unidad": {
+          "type": "string",
+          "description": "Unidad de medida del material.",
+          "enum": ["caja", "pieza", "paquete", "kg", "litro", "tarima"]
+        },
+        "orden": {
+          "type": "number",
+          "description": "Posición de la fila dentro de la tabla de materiales."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Marca de tiempo de creación asignada por el servidor."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Marca de tiempo de última actualización asignada por el servidor."
+        }
+      },
+      "required": [
+        "ownerId",
+        "movimientoId",
+        "codigo",
+        "descripcion_material",
+        "cantidad",
+        "unidad",
+        "orden",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/movimientos/{movimientoId}": {
+      "schema": { "$ref": "#/entities/MovimientoAlmacen" },
+      "description": "Almacena las notas de entrada, salida y devolución de almacén."
+    },
+    "/movimientos/{movimientoId}/materiales/{materialId}": {
+      "schema": { "$ref": "#/entities/MaterialMovimiento" },
+      "description": "Subcolección de partidas editables de materiales pertenecientes a cada movimiento."
+    }
+  }
+}
